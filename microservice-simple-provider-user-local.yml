@@ -1,4 +1,2 @@
-server:
-  port: 8099
-spring:  cloud:    consul:      host: 
+spring:  cloud:    consul: localhost      host: 8500
       
