@@ -1,0 +1,96 @@
+docker images 查询所有的镜像
+docker ps 查看所有的容器
+docker rmi images 删除镜像
+docker rm  container 删除容器
+docker pull 下载镜像
+docker run -d -p hostPort:containerPort image 运行docker镜像
+docker start container 启动容器
+docker stop  container 停止容器
+docker inspect --format "{{.State.Pid}}" container 获取容器的PID
+nsenter --target PID --mount --uts --ipc --net --pid 进入容器内部
+docker exec -it c3d5e10497b0  /bin/sh 进入容器内部
+docker attach container 进入容器内部，但是为阻塞状态
+docker rm -f ${docker ps -a -q} 删除所有容器
+docker rmi -f ${docker images}  删除所有镜像
+docker build -t xxxx . 创建镜像
+
+
+Dockerfile常用指令
+from 指定基础镜像
+add <src> ... <dest>     复制文件 例如 add microservice-simple-provider-user-0.0.1-SNAPSHOT.jar app.jar
+add ["<src>",..."<dest>" ]
+ARG 设置构建参数 ，这个参数值针对构建时的环境变量，在容器运行时不会存在这些变量 如 ARG user1=someuser
+CMD 容器启动命令	指令用于为执行的容器提供默认值。每个Dockerfile只有一个CMD命令，如果指定了多个CMD命令，那么只会执行最后一条，如果启动容器时指定了运行的命令，则会覆盖掉CMD指定的命令
+	支持三种格式
+	CMD ["executable","parama1","param2"](推荐使用)
+	CMD ["param1","param2"](为ENTRYPOINT指令提供预设参数)
+	CMD command param1 param2(在shell中执行)
+	示例：CMD echo "This is test" | WC-
+COPY 复制文件
+	复制文件格式为
+	COPY <src>...<dest>
+	COPY ["<src>",..."<dest>"]
+	复制本端的src到容器的dest。COPY和ADD指令类似，COPY不支持URL和压缩包
+ENTRYPOINT 入口点
+	格式为：
+	ENTRYPOINT ["executable","param1","param2"]
+	ENTRYPOINT command param1 param2
+	ENTRYPOINThe CMD指令的目的一样，都是指定Docker容器启动时执行的命令，可多次设置，但之后最后一次生效
+ENV	指定环境变量，格式为：
+	ENV <key> <value>
+	ENV <key>=<value>
+	示例
+	ENV JAVA_HOME /path/to/java
+EXPOSE 声明暴露的端口
+EXPOSE 指令用于声明在运行时容器提供的服务的端口，格式为：EXPOSE <port> [<port>...]
+		需要注意的是，这只是一个声明，运行时并不会因为该声明就打开相应的端口。该指令的作用主要是帮助镜像使用者理解该镜像服务的守护端口；其次是当运行时使用随机映射时，
+		会自动映射EXPOSE的端口示例：
+		#声明暴露一个端口示例：
+		EXPOSE port1
+		#相应的运行容器使用的命令
+		docker run -p port1 image
+		#也可以使用-p选项启动
+		docker run -p image
+		#声明暴露多个端口
+		EXPOSE port1 port2 port3
+		#相应的容器使用命令
+		docker run -p port1 -p port2 -p port3 image
+		#也可以指定需要映射到宿主机上的端口
+		docker run -p host_port1:port1 -p host_port2:port2 -p host_port3:port3 image
+FROM 指定镜像，使用FROM指令指定基础镜像，FROm指令有点像java中的extends关键字。需要注意的是，FROM指令必须指定且需要写在其他指令之前。FROM之后的指令都依赖于该指令所指定的镜像
+	 支持三种格式
+	 FROM <image>
+	 FROM <image>:<tag>
+	 FROM <image>@<digest>
+LABEL 为镜像添加元数据 格式为 LABEL <key>=<value> <key>=<value> <key>=<value>使用"""和"\"转换命令，示例：
+		LABEL "com.example.vendor"="ACME Incorporated"
+		LABEL com.example.label-with-value="foo"
+		LABEL version="1.0"
+		LABEL description="This text illustrates\
+		that label-values can span multiple lines."
+MAINTAINER 指定维护者的信息 用于为Dockerfile署名 格式为 MAINTAINER <name> 示例 MAINTAINER 戴虎<823898876@qq.com>
+RUN 执行命令 该指令支持两种格式：
+	RUN <command>
+	RUN ["executable","param1","param2"]
+	RUN <command>在shell终端中运行，在Linux中默认是/bin/sh -c ,在Windows中是cmd /s /c，使用这种格式，就像直接在命令行中输入命令一样。RUN["executable","param1","param2"]使用exec执行
+	这种方式类似于函数调用。指定其他终端可以通过该方式操作，例如：RUN["/bin/base","-c","echo hello"],该方式必须使用双引号而不能使用单引号，因为该方式会被转换成一个JSON数组
+USER 设置用户 该指令用于设置启动镜像时的用户或者UID，写在该指令后的RUN、CMD以及ENTRYPOINT指令都将使用该用户执行命令 USER elasticsearch
+VOLUME 指定挂载点 该指令使容器中的一个目录具有持久化存储的功能，该目录课被容器本身使用，也可以共享给其他容器。当容器中的应用有持久化数据的需求时可以在Dockerfile中使用该指令。
+		格式为
+		VOLUME ["/data"]
+		VOLUME /home/data
+WORKDIR 指定工作目录 格式为 WORKDIR /home/software 切换目录指令，类似于cd命令，写在该指令后面的RUN CMD ENTRYPOINT指令都将该目录作为当前目录，并执行响应的命令
+
+----
+docker  login 命令登录docker hub
+docker push {docker hub 账号}/镜像名称 向docker hub上推送镜像
+
+docker tag nginx consul-repo:0.0.1
+
+docker network create xxxx 建立docker的bridge网络名称
+
+docker network ls 查看docker的所有网络设置
+
+docker run -it --name <容器名> ---network <指定docker使用何种网络，默认是bridge> --network-alias <网络别名用于docker之间的访问>
+
+		
