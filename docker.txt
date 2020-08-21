@@ -93,4 +93,22 @@ docker network ls 查看docker的所有网络设置
 
 docker run -it --name <容器名> ---network <指定docker使用何种网络，默认是bridge> --network-alias <网络别名用于docker之间的访问>
 
+docker logs -f -t 容器 查看容器日志
+
+
+docker tag local-image:tagname new-repo:tagname 为仓库打上标签
+docker push new-repo:tagname   向仓库推送镜像
+
+-----私有仓库docker-registry2.0. 很多场景下，需要私有仓库管理Docker镜像。相比Docker Hub，私有仓库有以下优势：节省带宽，对于私有仓库中已有的镜像，无需从Docker Hub下载，只须从私有仓库中下载即可
+		更加安全、便于内部镜像的统一管理
+docker-registry2.0搭建只需要执行一个命令新建并启动一个Docker Register2.0即可
+docker run -d -p 5000:5000 --restart=always --name registry2 registry:2 搭建docker register2.0
+向私有镜像里面推送镜像的时候只需要在仓库之前加上私有仓库的地址
+docker push localhost:5000/823898876/config-server:0.0.1
+如果提示仓库没有对应的tag那么需要创建私有仓库的对应tag
+docker tag config-server:0.0.1 localhost:5000/823898876/config-server:register-0.0.1
+docker registry2.0需要Docker高于1.6.0版本
+Docker Registry2.0能够满足大部分场景下的需求，但他不包含界面、用户管理、和权限控制等功能。如果想要使用这些功能，可以使用Docker Trusted Registy
+
+
 		
